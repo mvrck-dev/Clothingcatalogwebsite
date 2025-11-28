@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auralane - Quality Apparel & Home Furnishings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-name {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .lang-btn {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .browse-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .browse-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5568d3;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 200px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            transition: margin-left 0.3s;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar.hidden {
+            margin-left: -300px;
+        }
+
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section h3 {
+            color: #667eea;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .filter-option:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        .price-range {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .price-range input {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .clear-filters {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        .clear-filters:hover {
+            background: #c82333;
+        }
+
+        /* Products Grid */
+        .products-container {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .products-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .products-count {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .product-images {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .product-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .product-images img.active {
+            display: block;
+        }
+
+        .image-nav {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .image-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .image-dot.active {
+            background: white;
+        }
+
+        .image-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background 0.3s;
+        }
+
+        .image-arrow:hover {
+            background: rgba(0,0,0,0.7);
+        }
+
+        .image-arrow.prev {
+            left: 10px;
+        }
+
+        .image-arrow.next {
+            right: 10px;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-code {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            color: #667eea;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .brand-name {
+                font-size: 2rem;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                max-height: 100vh;
+            }
+
+            .sidebar.hidden {
+                margin-left: -100%;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div style="width: 150px;"></div>
+            <h1 class="brand-name">Auralane</h1>
+            <div class="language-selector">
+                <button class="lang-btn active" data-lang="en">English</button>
+                <button class="lang-btn" data-lang="fi">Suomi</button>
+            </div>
+        </div>
+        <div class="search-container">
+            <button class="browse-btn" id="browseBtn">
+                <span data-translate="browse">Browse Catalog</span>
+            </button>
+            <div class="search-box">
+                <input type="text" id="searchInput" data-translate-placeholder="searchPlaceholder" placeholder="Search products by code, color, material, usage...">
+                <button id="searchBtn" data-translate="search">Search</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="main-content">
+        <aside class="sidebar" id="sidebar">
+            <div class="filter-section">
+                <h3 data-translate="itemType">Item Type</h3>
+                <label class="filter-option">
+                    <input type="checkbox" name="itemType" value="mens-apparel">
+                    <span data-translate="mensApparel">Men's Apparel</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="itemType" value="womens-apparel">
+                    <span data-translate="womensApparel">Women's Apparel</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="itemType" value="childrens-apparel">
+                    <span data-translate="childrensApparel">Children's Apparel</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="itemType" value="bedsheets">
+                    <span data-translate="bedsheets">Bedsheets</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="itemType" value="curtains">
+                    <span data-translate="curtains">Curtains</span>
+                </label>
+            </div>
+
+            <div class="filter-section">
+                <h3 data-translate="material">Material</h3>
+                <label class="filter-option">
+                    <input type="checkbox" name="material" value="cotton">
+                    <span data-translate="cotton">Cotton</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="material" value="silk">
+                    <span data-translate="silk">Silk</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="material" value="linen">
+                    <span data-translate="linen">Linen</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="material" value="polyester">
+                    <span data-translate="polyester">Polyester</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="material" value="wool">
+                    <span data-translate="wool">Wool</span>
+                </label>
+            </div>
+
+            <div class="filter-section">
+                <h3 data-translate="color">Color</h3>
+                <label class="filter-option">
+                    <input type="checkbox" name="color" value="white">
+                    <span data-translate="white">White</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="color" value="black">
+                    <span data-translate="black">Black</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="color" value="blue">
+                    <span data-translate="blue">Blue</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="color" value="red">
+                    <span data-translate="red">Red</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="color" value="beige">
+                    <span data-translate="beige">Beige</span>
+                </label>
+            </div>
+
+            <div class="filter-section">
+                <h3 data-translate="usage">Usage</h3>
+                <label class="filter-option">
+                    <input type="checkbox" name="usage" value="daily">
+                    <span data-translate="dailyUse">Daily Use</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="usage" value="party">
+                    <span data-translate="partyWear">Party Wear</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="usage" value="wedding">
+                    <span data-translate="weddingBridal">Weddings/Bridal</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" name="usage" value="sportswear">
+                    <span data-translate="sportswear">Sportswear</span>
+                </label>
+            </div>
+
+            <div class="filter-section">
+                <h3 data-translate="priceRange">Price Range (€)</h3>
+                <div class="price-range">
+                    <input type="number" id="minPrice" placeholder="Min" min="0">
+                    <span>-</span>
+                    <input type="number" id="maxPrice" placeholder="Max" min="0">
+                </div>
+            </div>
+
+            <button class="clear-filters" id="clearFilters" data-translate="clearFilters">Clear Filters</button>
+        </aside>
+
+        <main class="products-container">
+            <div class="products-header">
+                <h2 class="products-count"><span id="productCount">0</span> <span data-translate="productsFound">products found</span></h2>
+            </div>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be populated by JavaScript -->
+            </div>
+            <div class="no-products" id="noProducts" style="display: none;">
+                <p data-translate="noProductsFound">No products match your search criteria.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                browse: 'Browse Catalog',
+                search: 'Search',
+                searchPlaceholder: 'Search products by code, color, material, usage...',
+                itemType: 'Item Type',
+                mensApparel: "Men's Apparel",
+                womensApparel: "Women's Apparel",
+                childrensApparel: "Children's Apparel",
+                bedsheets: 'Bedsheets',
+                curtains: 'Curtains',
+                material: 'Material',
+                cotton: 'Cotton',
+                silk: 'Silk',
+                linen: 'Linen',
+                polyester: 'Polyester',
+                wool: 'Wool',
+                color: 'Color',
+                white: 'White',
+                black: 'Black',
+                blue: 'Blue',
+                red: 'Red',
+                beige: 'Beige',
+                usage: 'Usage',
+                dailyUse: 'Daily Use',
+                partyWear: 'Party Wear',
+                weddingBridal: 'Weddings/Bridal',
+                sportswear: 'Sportswear',
+                priceRange: 'Price Range (€)',
+                clearFilters: 'Clear Filters',
+                productsFound: 'products found',
+                noProductsFound: 'No products match your search criteria.'
+            },
+            fi: {
+                browse: 'Selaa luetteloa',
+                search: 'Hae',
+                searchPlaceholder: 'Hae tuotteita koodin, värin, materiaalin, käytön mukaan...',
+                itemType: 'Tuotetyyppi',
+                mensApparel: 'Miesten vaatteet',
+                womensApparel: 'Naisten vaatteet',
+                childrensApparel: 'Lasten vaatteet',
+                bedsheets: 'Lakanat',
+                curtains: 'Verhot',
+                material: 'Materiaali',
+                cotton: 'Puuvilla',
+                silk: 'Silkki',
+                linen: 'Pellava',
+                polyester: 'Polyesteri',
+                wool: 'Villa',
+                color: 'Väri',
+                white: 'Valkoinen',
+                black: 'Musta',
+                blue: 'Sininen',
+                red: 'Punainen',
+                beige: 'Beige',
+                usage: 'Käyttö',
+                dailyUse: 'Päivittäinen käyttö',
+                partyWear: 'Juhlavaatteet',
+                weddingBridal: 'Häät/Morsiusasut',
+                sportswear: 'Urheiluvaatteet',
+                priceRange: 'Hintaluokka (€)',
+                clearFilters: 'Tyhjennä suodattimet',
+                productsFound: 'tuotetta löydetty',
+                noProductsFound: 'Hakuehtosi eivät tuottaneet tuloksia.'
+            }
+        };
+
+        // Product Data
+        const products = [
+            {
+                code: 'MA-001-BLU',
+                price: 45.90,
+                itemType: 'mens-apparel',
+                color: 'blue',
+                material: 'cotton',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1760433468572-44d1cf0b8641?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBmb3JtYWwlMjBzaGlydHxlbnwxfHx8fDE3NjQyNTA0NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                    'https://images.unsplash.com/photo-1631883958724-4aebab11b6a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBjYXN1YWwlMjB3ZWFyfGVufDF8fHx8MTc2NDI1MDcwNXww&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'WA-002-BLK',
+                price: 89.90,
+                itemType: 'womens-apparel',
+                color: 'black',
+                material: 'silk',
+                usage: 'party',
+                images: [
+                    'https://images.unsplash.com/photo-1729146768776-8356708e907d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHBhcnR5JTIwZHJlc3N8ZW58MXx8fHwxNzY0MzMwNTUwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+                    'https://images.unsplash.com/photo-1756483510840-b0dda5f0dd0f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGRyZXNzJTIwZWxlZ2FudHxlbnwxfHx8fDE3NjQyNzAzNDV8MA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'WA-003-WHT',
+                price: 299.90,
+                itemType: 'womens-apparel',
+                color: 'white',
+                material: 'silk',
+                usage: 'wedding',
+                images: [
+                    'https://images.unsplash.com/photo-1554321859-118e8b287c5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwYnJpZGFsJTIwZHJlc3N8ZW58MXx8fHwxNjQzMzA1NTF8MA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'CA-004-BLU',
+                price: 35.90,
+                itemType: 'childrens-apparel',
+                color: 'blue',
+                material: 'cotton',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1622218286192-95f6a20083c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMGNsb3RoaW5nfGVufDF8fHx8MTc2NDI1OTc3M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+                    'https://images.unsplash.com/photo-1758687125910-c233b47f47b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwY2FzdWFsJTIwY2xvdGhpbmd8ZW58MXx8fHwxNjQzMzA1NTF8MA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'BS-005-WHT',
+                price: 55.00,
+                itemType: 'bedsheets',
+                color: 'white',
+                material: 'linen',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1589895868947-b51095d437f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWRzaGVldCUyMGxpbmVufGVufDF8fHx8MTc2NDMzMDU0OXww&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'CU-006-BEI',
+                price: 65.00,
+                itemType: 'curtains',
+                color: 'beige',
+                material: 'linen',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1764217543048-62710d6b0166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXJ0YWlucyUyMGhvbWV8ZW58MXx8fHwxNzY0MzMwNTQ5fDA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'MA-007-BLK',
+                price: 59.90,
+                itemType: 'mens-apparel',
+                color: 'black',
+                material: 'polyester',
+                usage: 'sportswear',
+                images: [
+                    'https://images.unsplash.com/photo-1705594858888-90d164689257?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcG9ydHMlMjBhdGhsZXRpYyUyMHdlYXJ8ZW58MXx8fHwxNzY0MzMwNTUwfDA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'MA-008-WHT',
+                price: 49.90,
+                itemType: 'mens-apparel',
+                color: 'white',
+                material: 'cotton',
+                usage: 'party',
+                images: [
+                    'https://images.unsplash.com/photo-1760433468572-44d1cf0b8641?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBmb3JtYWwlMjBzaGlydHxlbnwxfHx8fDE3NjQyNTA0NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'WA-009-RED',
+                price: 79.90,
+                itemType: 'womens-apparel',
+                color: 'red',
+                material: 'silk',
+                usage: 'party',
+                images: [
+                    'https://images.unsplash.com/photo-1729146768776-8356708e907d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHBhcnR5JTIwZHJlc3N8ZW58MXx8fHwxNzY0MzMwNTUwfDA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'CA-010-WHT',
+                price: 29.90,
+                itemType: 'childrens-apparel',
+                color: 'white',
+                material: 'cotton',
+                usage: 'party',
+                images: [
+                    'https://images.unsplash.com/photo-1622218286192-95f6a20083c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMGNsb3RoaW5nfGVufDF8fHx8MTc2NDI1OTc3M3ww&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'BS-011-BLU',
+                price: 49.90,
+                itemType: 'bedsheets',
+                color: 'blue',
+                material: 'cotton',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1589895868947-b51095d437f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWRzaGVldCUyMGxpbmVufGVufDF8fHx8MTc2NDMzMDU0OXww&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            },
+            {
+                code: 'CU-012-WHT',
+                price: 75.00,
+                itemType: 'curtains',
+                color: 'white',
+                material: 'silk',
+                usage: 'daily',
+                images: [
+                    'https://images.unsplash.com/photo-1764217543048-62710d6b0166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXJ0YWlucyUyMGhvbWV8ZW58MXx8fHwxNzY0MzMwNTQ5fDA&ixlib=rb-4.1.0&q=80&w=1080'
+                ]
+            }
+        ];
+
+        // State
+        let currentLang = 'en';
+        let filteredProducts = [...products];
+        let sidebarVisible = true;
+
+        // Language switching
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update all translated elements
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.dataset.translate;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Update placeholder
+            const searchInput = document.getElementById('searchInput');
+            const placeholderKey = searchInput.dataset.translatePlaceholder;
+            if (placeholderKey && translations[lang][placeholderKey]) {
+                searchInput.placeholder = translations[lang][placeholderKey];
+            }
+        }
+
+        // Browse button toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebarVisible = !sidebarVisible;
+            sidebar.classList.toggle('hidden', !sidebarVisible);
+            
+            if (window.innerWidth <= 768) {
+                overlay.classList.toggle('active', sidebarVisible);
+            }
+        }
+
+        // Filter products
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+
+            const selectedFilters = {
+                itemType: [],
+                material: [],
+                color: [],
+                usage: []
+            };
+
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                const filterType = checkbox.name;
+                const filterValue = checkbox.value;
+                if (selectedFilters[filterType]) {
+                    selectedFilters[filterType].push(filterValue);
+                }
+            });
+
+            filteredProducts = products.filter(product => {
+                // Search filter
+                const searchMatch = !searchTerm || 
+                    product.code.toLowerCase().includes(searchTerm) ||
+                    product.color.toLowerCase().includes(searchTerm) ||
+                    product.material.toLowerCase().includes(searchTerm) ||
+                    product.usage.toLowerCase().includes(searchTerm);
+
+                // Price filter
+                const priceMatch = product.price >= minPrice && product.price <= maxPrice;
+
+                // Category filters
+                const itemTypeMatch = selectedFilters.itemType.length === 0 || 
+                    selectedFilters.itemType.includes(product.itemType);
+                const materialMatch = selectedFilters.material.length === 0 || 
+                    selectedFilters.material.includes(product.material);
+                const colorMatch = selectedFilters.color.length === 0 || 
+                    selectedFilters.color.includes(product.color);
+                const usageMatch = selectedFilters.usage.length === 0 || 
+                    selectedFilters.usage.includes(product.usage);
+
+                return searchMatch && priceMatch && itemTypeMatch && materialMatch && colorMatch && usageMatch;
+            });
+
+            renderProducts();
+        }
+
+        // Render products
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const noProducts = document.getElementById('noProducts');
+            const productCount = document.getElementById('productCount');
+
+            productCount.textContent = filteredProducts.length;
+
+            if (filteredProducts.length === 0) {
+                grid.style.display = 'none';
+                noProducts.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            noProducts.style.display = 'none';
+
+            grid.innerHTML = filteredProducts.map((product, index) => `
+                <div class="product-card">
+                    <div class="product-images" id="images-${index}">
+                        ${product.images.map((img, imgIndex) => `
+                            <img src="${img}" alt="${product.code}" class="${imgIndex === 0 ? 'active' : ''}" data-index="${imgIndex}">
+                        `).join('')}
+                        ${product.images.length > 1 ? `
+                            <button class="image-arrow prev" onclick="changeImage(${index}, -1)">‹</button>
+                            <button class="image-arrow next" onclick="changeImage(${index}, 1)">›</button>
+                            <div class="image-nav">
+                                ${product.images.map((_, dotIndex) => `
+                                    <div class="image-dot ${dotIndex === 0 ? 'active' : ''}" onclick="setImage(${index}, ${dotIndex})"></div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-code">${product.code}</div>
+                        <div class="product-price">€${product.price.toFixed(2)}</div>
+                        <div class="product-tags">
+                            <span class="tag">${translations[currentLang][product.itemType.replace('-', '')] || product.itemType}</span>
+                            <span class="tag">${translations[currentLang][product.color] || product.color}</span>
+                            <span class="tag">${translations[currentLang][product.material] || product.material}</span>
+                            <span class="tag">${translations[currentLang][product.usage === 'daily' ? 'dailyUse' : product.usage === 'party' ? 'partyWear' : product.usage === 'wedding' ? 'weddingBridal' : 'sportswear'] || product.usage}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Image carousel
+        function changeImage(productIndex, direction) {
+            const container = document.getElementById(`images-${productIndex}`);
+            const images = container.querySelectorAll('img');
+            const dots = container.querySelectorAll('.image-dot');
+            let currentIndex = Array.from(images).findIndex(img => img.classList.contains('active'));
+            
+            images[currentIndex].classList.remove('active');
+            dots[currentIndex].classList.remove('active');
+            
+            currentIndex = (currentIndex + direction + images.length) % images.length;
+            
+            images[currentIndex].classList.add('active');
+            dots[currentIndex].classList.add('active');
+        }
+
+        function setImage(productIndex, imageIndex) {
+            const container = document.getElementById(`images-${productIndex}`);
+            const images = container.querySelectorAll('img');
+            const dots = container.querySelectorAll('.image-dot');
+            
+            images.forEach((img, idx) => {
+                img.classList.toggle('active', idx === imageIndex);
+            });
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === imageIndex);
+            });
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+
+        document.getElementById('browseBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('overlay').addEventListener('click', toggleSidebar);
+
+        document.getElementById('searchBtn').addEventListener('click', applyFilters);
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') applyFilters();
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', applyFilters);
+        });
+
+        document.getElementById('minPrice').addEventListener('input', applyFilters);
+        document.getElementById('maxPrice').addEventListener('input', applyFilters);
+
+        document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+        // Initialize
+        renderProducts();
+    </script>
+</body>
+</html>
