@@ -1,38 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import Papa from 'papaparse';
+import catalogData from './data/catalog.csv?raw';
+
+// Types
+interface Product {
+  id: string;
+  item: string;
+  color: string;
+  fabric_and_work: string;
+  quality: string;
+  price: number;
+  images: string; // Comma-separated filenames
+  video?: string;
+}
 
 // Translations
 const translations = {
   en: {
     browse: 'Browse Catalog',
     search: 'Search',
-    searchPlaceholder: 'Search products by code, color, material, usage...',
-    itemType: 'Item Type',
-    mensApparel: "Men's Apparel",
-    womensApparel: "Women's Apparel",
-    childrensApparel: "Children's Apparel",
-    bedsheets: 'Bedsheets',
-    curtains: 'Curtains',
-    material: 'Material',
-    cotton: 'Cotton',
-    silk: 'Silk',
-    linen: 'Linen',
-    polyester: 'Polyester',
-    wool: 'Wool',
+    searchPlaceholder: 'Search products...',
+    item: 'Item',
     color: 'Color',
-    white: 'White',
-    black: 'Black',
-    blue: 'Blue',
-    red: 'Red',
-    beige: 'Beige',
-    green: 'Green',
-    yellow: 'Yellow',
-    gray: 'Gray',
-    brown: 'Brown',
-    usage: 'Usage',
-    dailyUse: 'Daily Use',
-    partyWear: 'Party Wear',
-    weddingBridal: 'Weddings/Bridal',
-    sportswear: 'Sportswear',
+    fabric: 'Fabric & Work',
+    quality: 'Quality',
     priceRange: 'Price Range (€)',
     clearFilters: 'Clear Filters',
     productsFound: 'products found',
@@ -41,46 +32,25 @@ const translations = {
     contactUs: 'Contact Us',
     reportIssue: 'Report Issue',
     aboutUsTitle: 'About Auralane',
-    aboutUsContent: 'Auralane is owned by Rishi Kant Kumar. The website is maintained by Guru Consultants Oy. Website design by Jyothi Dayama.',
     contactUsTitle: 'Contact Us',
     call: 'Call',
     sms: 'SMS',
     whatsapp: 'WhatsApp',
     close: 'Close',
-    reportIssueTitle: 'Report an Issue',
-    back: 'Back'
+    back: 'Back',
+    loadingCatalog: 'Loading catalog...',
+    owner: 'Owner',
+    maintainedBy: 'Maintained by',
+    websiteDesigner: 'Website Designer'
   },
   fi: {
     browse: 'Selaa luetteloa',
     search: 'Hae',
-    searchPlaceholder: 'Hae tuotteita koodin, värin, materiaalin, käytön mukaan...',
-    itemType: 'Tuotetyyppi',
-    mensApparel: 'Miesten vaatteet',
-    womensApparel: 'Naisten vaatteet',
-    childrensApparel: 'Lasten vaatteet',
-    bedsheets: 'Lakanat',
-    curtains: 'Verhot',
-    material: 'Materiaali',
-    cotton: 'Puuvilla',
-    silk: 'Silkki',
-    linen: 'Pellava',
-    polyester: 'Polyesteri',
-    wool: 'Villa',
+    searchPlaceholder: 'Hae tuotteita...',
+    item: 'Tuote',
     color: 'Väri',
-    white: 'Valkoinen',
-    black: 'Musta',
-    blue: 'Sininen',
-    red: 'Punainen',
-    beige: 'Beige',
-    green: 'Vihreä',
-    yellow: 'Keltainen',
-    gray: 'Harmaa',
-    brown: 'Ruskea',
-    usage: 'Käyttö',
-    dailyUse: 'Päivittäinen käyttö',
-    partyWear: 'Juhlavaatteet',
-    weddingBridal: 'Häät/Morsiusasut',
-    sportswear: 'Urheiluvaatteet',
+    fabric: 'Kangas ja työ',
+    quality: 'Laatu',
     priceRange: 'Hintaluokka (€)',
     clearFilters: 'Tyhjennä suodattimet',
     productsFound: 'tuotetta löydetty',
@@ -89,169 +59,167 @@ const translations = {
     contactUs: 'Ota yhteyttä',
     reportIssue: 'Ilmoita ongelmasta',
     aboutUsTitle: 'Tietoa Auralane',
-    aboutUsContent: 'Auralane on Rishi Kant Kumarin omistama. Verkkosivustoa ylläpitää Guru Consultants Oy. Verkkosivuston suunnittelu: Jyothi Dayama.',
     contactUsTitle: 'Ota yhteyttä',
     call: 'Soita',
     sms: 'Tekstiviesti',
     whatsapp: 'WhatsApp',
     close: 'Sulje',
-    reportIssueTitle: 'Ilmoita ongelmasta',
-    back: 'Takaisin'
+    back: 'Takaisin',
+    loadingCatalog: 'Ladataan luetteloa...',
+    owner: 'Omistaja',
+    maintainedBy: 'Ylläpitäjä',
+    websiteDesigner: 'Verkkosivuston suunnittelija'
   }
 };
 
-// Generate products
-const generateProducts = () => {
-  const itemTypes = ['mens-apparel', 'womens-apparel', 'childrens-apparel', 'bedsheets', 'curtains'];
-  const colors = ['white', 'black', 'blue', 'red', 'beige', 'green', 'yellow', 'gray', 'brown'];
-  const materials = ['cotton', 'silk', 'linen', 'polyester', 'wool'];
-  const usages = ['daily', 'party', 'wedding', 'sportswear'];
-  
-  const images = {
-    'mens-apparel': [
-      'https://images.unsplash.com/photo-1760433468572-44d1cf0b8641?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBmb3JtYWwlMjBzaGlydHxlbnwxfHx8fDE3NjQyNTA0NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      'https://images.unsplash.com/photo-1631883958724-4aebab11b6a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBjYXN1YWwlMjB3ZWFyfGVufDF8fHx8MTc2NDI1MDcwNXww&ixlib=rb-4.1.0&q=80&w=1080'
-    ],
-    'womens-apparel': [
-      'https://images.unsplash.com/photo-1729146768776-8356708e907d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMHBhcnR5JTIwZHJlc3N8ZW58MXx8fHwxNzY0MzMwNTUwfDA&ixlib=rb-4.1.0&q=80&w=1080',
-      'https://images.unsplash.com/photo-1756483510840-b0dda5f0dd0f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21lbiUyMGRyZXNzJTIwZWxlZ2FudHxlbnwxfHx8fDE3NjQyNzAzNDV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      'https://images.unsplash.com/photo-1554321859-118e8b287c5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwYnJpZGFsJTIwZHJlc3N8ZW58MXx8fHwxNzY0MzMwNTUxfDA&ixlib=rb-4.1.0&q=80&w=1080'
-    ],
-    'childrens-apparel': [
-      'https://images.unsplash.com/photo-1622218286192-95f6a20083c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMGNsb3RoaW5nfGVufDF8fHx8MTc2NDI1OTc3M3ww&ixlib=rb-4.1.0&q=80&w=1080',
-      'https://images.unsplash.com/photo-1758687125910-c233b47f47b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwY2FzdWFsJTIwY2xvdGhpbmd8ZW58MXx8fHwxNzY0MzMwNTUxfDA&ixlib=rb-4.1.0&q=80&w=1080'
-    ],
-    'bedsheets': [
-      'https://images.unsplash.com/photo-1589895868947-b51095d437f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWRzaGVldCUyMGxpbmVufGVufDF8fHx8MTc2NDMzMDU0OXww&ixlib=rb-4.1.0&q=80&w=1080'
-    ],
-    'curtains': [
-      'https://images.unsplash.com/photo-1764217543048-62710d6b0166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXJ0YWlucyUyMGhvbWV8ZW58MXx8fHwxNzY0MzMwNTQ5fDA&ixlib=rb-4.1.0&q=80&w=1080'
-    ]
-  };
+// Product Data Translations
+const productTranslations: Record<string, string> = {
+  // Items
+  "Saree": "Sari",
 
-  const products = [];
-  let counter = 1;
+  // Colors
+  "Golden": "Kultainen",
+  "Maroon": "Kastanjanruskea",
+  "Orange Pink": "Oranssi vaaleanpunainen",
+  "Pink & Purple": "Vaaleanpunainen & Purppura",
+  "Pink": "Vaaleanpunainen",
+  "Purple & Green": "Purppura & Vihreä",
+  "Purple & White": "Purppura & Valkoinen",
+  "White & Red": "Valkoinen & Punainen",
+  "White Red Yellow": "Valkoinen Punainen Keltainen",
+  "Yellow & Red": "Keltainen & Punainen",
+  "Yellow & Sky blue": "Keltainen & Taivaansininen",
 
-  // Generate at least 25+ items per category to exceed 100 total
-  for (const itemType of itemTypes) {
-    const itemsPerCategory = 25;
-    for (let i = 0; i < itemsPerCategory; i++) {
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const material = materials[Math.floor(Math.random() * materials.length)];
-      const usage = usages[Math.floor(Math.random() * usages.length)];
-      const price = (Math.random() * 250 + 20).toFixed(2);
-      
-      const prefix = itemType.substring(0, 2).toUpperCase();
-      const code = `${prefix}-${String(counter).padStart(3, '0')}-${color.substring(0, 3).toUpperCase()}`;
-      
-      products.push({
-        code,
-        price: parseFloat(price),
-        itemType,
-        color,
-        material,
-        usage,
-        images: images[itemType as keyof typeof images]
-      });
-      
-      counter++;
-    }
-  }
-
-  return products;
+  // Fabrics
+  "Pure viscose weaving jacquard saree with sequence work pure viscose matching blouse .": "Puhdas viskoosi kudonta jacquard sari, jossa on sekvenssityö puhdas viskoosi vastaava pusero.",
+  "Pure Viscose Georgette Saree With Fancy Zari & Fancy Jecquard Border & Fancy Viscose Jecquard Blouse": "Puhdas viskoosi georgette sari, jossa on hieno Zari & hieno Jecquard-reunus & hieno viskoosi Jecquard-pusero",
+  "soft beautiful Chinon saree with traditional bandej butta heavy bandej pallu with handwork & muslin bandej blouse": "pehmeä kaunis Chinon-sari, jossa on perinteinen bandej butta raskas bandej pallu käsityöllä & musliini bandej pusero",
+  "Crush Silk Saree With Fancy Sequince Embroderiy Work & Fancy Blouse": "Crush Silkki -sari, jossa on hieno paljettikirjailutyö & hieno pusero",
+  "fesive season": "juhlakausi",
+  "Saree already full demanded best quality": "Sari on jo täysin kysytty parasta laatua",
+  "Best Selling Product": "Myydyin tuote",
+  "We Believe in Quality": "Uskomme laatuun"
 };
 
-const products = generateProducts();
+const tData = (text: string, lang: 'en' | 'fi') => {
+  if (lang === 'en') return text;
+  return productTranslations[text] || text;
+};
 
 // Product card with image carousel
-function ProductCard({ product, lang }: { product: any; lang: 'en' | 'fi' }) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+function ProductCard({ product, lang }: { product: Product; lang: 'en' | 'fi' }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-  };
+  // Combine images and video into a single media array
+  const media = useMemo(() => {
+    const items: { type: 'image' | 'video', src: string }[] = [];
 
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
-  };
-
-  const getTagLabel = (type: string, value: string) => {
-    if (type === 'itemType') {
-      const itemTypeMap: Record<string, keyof typeof translations.en> = {
-        'mens-apparel': 'mensApparel',
-        'womens-apparel': 'womensApparel',
-        'childrens-apparel': 'childrensApparel',
-        'bedsheets': 'bedsheets',
-        'curtains': 'curtains'
-      };
-      return translations[lang][itemTypeMap[value]] || value;
+    if (product.images) {
+      String(product.images).split(',').forEach(img => {
+        items.push({
+          type: 'image',
+          src: `/products/images/${product.id}/${img.trim()}`
+        });
+      });
     }
-    if (type === 'usage') {
-      const usageMap: Record<string, keyof typeof translations.en> = {
-        daily: 'dailyUse',
-        party: 'partyWear',
-        wedding: 'weddingBridal',
-        sportswear: 'sportswear'
-      };
-      return translations[lang][usageMap[value]] || value;
+
+    if (product.video) {
+      items.push({
+        type: 'video',
+        src: `/products/videos/${product.id}/${product.video.trim()}`
+      });
     }
-    return translations[lang][value as keyof typeof translations.en] || value;
+
+    return items;
+  }, [product.images, product.video, product.id]);
+
+  const nextMedia = () => {
+    if (media.length <= 1) return;
+    setCurrentIndex((curr) => (curr + 1) % media.length);
   };
+
+  const prevMedia = () => {
+    if (media.length <= 1) return;
+    setCurrentIndex((curr) => (curr - 1 + media.length) % media.length);
+  };
+
+  const currentMedia = media[currentIndex];
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-      <div className="relative h-[300px] bg-gray-100">
-        <img
-          src={product.images[currentImageIndex]}
-          alt={product.code}
-          className="w-full h-full object-cover"
-        />
-        {product.images.length > 1 && (
+    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full">
+      <div className="relative bg-gray-100 group overflow-hidden">
+        {media.length > 0 ? (
+          currentMedia.type === 'video' ? (
+            <video
+              src={currentMedia.src}
+              className="w-full h-[400px] object-cover"
+              controls
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : (
+            <img
+              src={currentMedia.src}
+              alt={`${product.id} - ${currentIndex + 1}`}
+              className="w-full h-[400px] object-cover"
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image';
+              }}
+            />
+          )
+        ) : (
+          <div className="w-full h-[400px] flex items-center justify-center text-gray-400">
+            No Media
+          </div>
+        )}
+
+        {media.length > 1 && (
           <>
             <button
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 rounded-full transition"
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); prevMedia(); }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 rounded-full transition z-10 opacity-0 group-hover:opacity-100"
             >
               ‹
             </button>
             <button
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 rounded-full transition"
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); nextMedia(); }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 rounded-full transition z-10 opacity-0 group-hover:opacity-100"
             >
               ›
             </button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-              {product.images.map((_: any, idx: number) => (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              {media.map((_, idx: number) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition ${
-                    idx === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
+                  onClick={(e: React.MouseEvent) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                  className={`w-2 h-2 rounded-full transition ${idx === currentIndex ? 'bg-white' : 'bg-white/50'
+                    }`}
                 />
               ))}
             </div>
           </>
         )}
       </div>
-      <div className="p-6">
-        <div className="text-gray-500 text-sm mb-2">{product.code}</div>
-        <div className="text-purple-600 mb-4" style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
-          €{product.price.toFixed(2)}
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <div className="text-gray-500 text-sm font-mono">{product.id}</div>
+          <div className="text-purple-600 font-bold text-xl">
+            €{product.price}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="bg-gray-200 px-3 py-1 rounded-full text-sm">
-            {getTagLabel('itemType', product.itemType)}
+
+        <h3 className="font-bold text-lg mb-2">{tData(product.item, lang)}</h3>
+
+        <div className="mb-3">
+          <span className="inline-flex items-center bg-purple-50 text-purple-700 border border-purple-200 text-xs px-3 py-1 rounded-full font-medium shadow-sm">
+            {tData(product.color, lang)}
           </span>
-          <span className="bg-gray-200 px-3 py-1 rounded-full text-sm">
-            {getTagLabel('color', product.color)}
-          </span>
-          <span className="bg-gray-200 px-3 py-1 rounded-full text-sm">
-            {getTagLabel('material', product.material)}
-          </span>
-          <span className="bg-gray-200 px-3 py-1 rounded-full text-sm">
-            {getTagLabel('usage', product.usage)}
-          </span>
+        </div>
+
+        <div className="space-y-2 text-sm text-gray-600 mb-4 flex-1">
+          <p className="leading-relaxed">{tData(product.fabric_and_work, lang)}</p>
         </div>
       </div>
     </div>
@@ -264,15 +232,58 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState<'catalog' | 'about'>('catalog');
   const [showContactDialog, setShowContactDialog] = useState(false);
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [filters, setFilters] = useState({
-    itemType: [] as string[],
-    material: [] as string[],
+    item: [] as string[],
     color: [] as string[],
-    usage: [] as string[]
+    fabric: [] as string[],
+    quality: [] as string[]
   });
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   const t = translations[lang];
+
+  // Load Data
+  useEffect(() => {
+    Papa.parse(catalogData, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const parsedProducts = results.data as Product[];
+        // Filter out any invalid rows if necessary
+        const validProducts = parsedProducts
+          .filter(p => p.id && p.price)
+          .map(p => ({
+            ...p,
+            // Convert Rupees to Euros (approx 1 EUR = 90 INR)
+            price: Number((p.price / 90).toFixed(2))
+          }));
+        setProducts(validProducts);
+        setLoading(false);
+      },
+      error: (error: Error) => {
+        console.error('Error parsing CSV:', error);
+        setLoading(false);
+      }
+    });
+  }, []);
+
+  // Extract unique values for filters
+  const uniqueValues = useMemo(() => {
+    const getUnique = (key: keyof Product) =>
+      Array.from(new Set(products.map(p => p[key]?.toString()).filter(Boolean))).sort();
+
+    return {
+      item: getUnique('item'),
+      color: getUnique('color'),
+      fabric: getUnique('fabric_and_work'),
+      quality: getUnique('quality')
+    };
+  }, [products]);
 
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters((prev) => ({
@@ -285,10 +296,10 @@ export default function App() {
 
   const clearFilters = () => {
     setFilters({
-      itemType: [],
-      material: [],
+      item: [],
       color: [],
-      usage: []
+      fabric: [],
+      quality: []
     });
     setPriceRange({ min: '', max: '' });
     setSearchTerm('');
@@ -298,36 +309,22 @@ export default function App() {
     return products.filter((product) => {
       const searchMatch =
         !searchTerm ||
-        product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.usage.toLowerCase().includes(searchTerm.toLowerCase());
+        Object.values(product).some(val =>
+          val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
       const minPrice = parseFloat(priceRange.min) || 0;
       const maxPrice = parseFloat(priceRange.max) || Infinity;
       const priceMatch = product.price >= minPrice && product.price <= maxPrice;
 
-      const itemTypeMatch =
-        filters.itemType.length === 0 || filters.itemType.includes(product.itemType);
-      const materialMatch =
-        filters.material.length === 0 || filters.material.includes(product.material);
+      const itemMatch = filters.item.length === 0 || filters.item.includes(product.item);
       const colorMatch = filters.color.length === 0 || filters.color.includes(product.color);
-      const usageMatch = filters.usage.length === 0 || filters.usage.includes(product.usage);
+      const fabricMatch = filters.fabric.length === 0 || filters.fabric.includes(product.fabric_and_work);
+      const qualityMatch = filters.quality.length === 0 || filters.quality.includes(product.quality);
 
-      return searchMatch && priceMatch && itemTypeMatch && materialMatch && colorMatch && usageMatch;
+      return searchMatch && priceMatch && itemMatch && colorMatch && fabricMatch && qualityMatch;
     });
-  }, [searchTerm, filters, priceRange]);
-
-  const getItemTypeLabel = (item: string) => {
-    const itemTypeMap: Record<string, keyof typeof translations.en> = {
-      'mens-apparel': 'mensApparel',
-      'womens-apparel': 'womensApparel',
-      'childrens-apparel': 'childrensApparel',
-      'bedsheets': 'bedsheets',
-      'curtains': 'curtains'
-    };
-    return t[itemTypeMap[item]];
-  };
+  }, [products, searchTerm, filters, priceRange]);
 
   if (currentPage === 'about') {
     return (
@@ -340,17 +337,15 @@ export default function App() {
             <div className="flex gap-2 bg-white/20 p-2 rounded-lg">
               <button
                 onClick={() => setLang('en')}
-                className={`px-4 py-2 rounded transition ${
-                  lang === 'en' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
-                }`}
+                className={`px-4 py-2 rounded transition ${lang === 'en' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
+                  }`}
               >
                 English
               </button>
               <button
                 onClick={() => setLang('fi')}
-                className={`px-4 py-2 rounded transition ${
-                  lang === 'fi' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
-                }`}
+                className={`px-4 py-2 rounded transition ${lang === 'fi' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
+                  }`}
               >
                 Suomi
               </button>
@@ -367,9 +362,9 @@ export default function App() {
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="mb-6" style={{ fontSize: '2rem', fontWeight: 'bold' }}>{t.aboutUsTitle}</h2>
             <div className="space-y-4" style={{ fontSize: '1.1rem', lineHeight: '1.8' }}>
-              <p><strong>Owner:</strong> Rishi Kant Kumar</p>
-              <p><strong>Maintained by:</strong> Guru Consultants Oy</p>
-              <p><strong>Website Designer:</strong> Jyothi Dayama</p>
+              <p><strong>{t.owner}:</strong> Rishi Kant Kumar</p>
+              <p><strong>{t.maintainedBy}:</strong> Guru Consultants Oy</p>
+              <p><strong>{t.websiteDesigner}:</strong> Jyothi Dayama</p>
             </div>
           </div>
         </div>
@@ -402,17 +397,15 @@ export default function App() {
           <div className="flex gap-2 bg-white/20 p-2 rounded-lg">
             <button
               onClick={() => setLang('en')}
-              className={`px-4 py-2 rounded transition ${
-                lang === 'en' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
-              }`}
+              className={`px-4 py-2 rounded transition ${lang === 'en' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
+                }`}
             >
               English
             </button>
             <button
               onClick={() => setLang('fi')}
-              className={`px-4 py-2 rounded transition ${
-                lang === 'fi' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
-              }`}
+              className={`px-4 py-2 rounded transition ${lang === 'fi' ? 'bg-white text-purple-600' : 'bg-white/30 text-white'
+                }`}
             >
               Suomi
             </button>
@@ -444,43 +437,24 @@ export default function App() {
       <div className="flex flex-1">
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-[300px] bg-white shadow-lg p-6 overflow-y-auto">
-            {/* Item Type */}
+          <aside className="w-[300px] bg-white shadow-lg p-6 overflow-y-auto h-[calc(100vh-200px)] sticky top-0">
+            {/* Item */}
             <div className="mb-6">
               <h3 className="text-purple-600 mb-3 pb-2 border-b-2 border-purple-600">
-                {t.itemType}
+                {t.item}
               </h3>
-              {['mens-apparel', 'womens-apparel', 'childrens-apparel', 'bedsheets', 'curtains'].map(
-                (item) => (
-                  <label key={item} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.itemType.includes(item)}
-                      onChange={() => toggleFilter('itemType', item)}
-                      className="mr-2"
-                    />
-                    <span>{getItemTypeLabel(item)}</span>
-                  </label>
-                )
-              )}
-            </div>
-
-            {/* Material */}
-            <div className="mb-6">
-              <h3 className="text-purple-600 mb-3 pb-2 border-b-2 border-purple-600">
-                {t.material}
-              </h3>
-              {['cotton', 'silk', 'linen', 'polyester', 'wool'].map((item) => (
-                <label key={item} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
+              {uniqueValues.item.map((val) => (
+                <label key={val} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={filters.material.includes(item)}
-                    onChange={() => toggleFilter('material', item)}
+                    checked={filters.item.includes(val as string)}
+                    onChange={() => toggleFilter('item', val as string)}
                     className="mr-2"
                   />
-                  <span>{t[item as keyof typeof t]}</span>
+                  <span>{tData(val as string, lang)}</span>
                 </label>
-              ))}
+              )
+              )}
             </div>
 
             {/* Color */}
@@ -488,44 +462,54 @@ export default function App() {
               <h3 className="text-purple-600 mb-3 pb-2 border-b-2 border-purple-600">
                 {t.color}
               </h3>
-              {['white', 'black', 'blue', 'red', 'beige', 'green', 'yellow', 'gray', 'brown'].map((item) => (
-                <label key={item} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
+              {uniqueValues.color.map((val) => (
+                <label key={val} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={filters.color.includes(item)}
-                    onChange={() => toggleFilter('color', item)}
+                    checked={filters.color.includes(val as string)}
+                    onChange={() => toggleFilter('color', val as string)}
                     className="mr-2"
                   />
-                  <span>{t[item as keyof typeof t]}</span>
+                  <span>{tData(val as string, lang)}</span>
                 </label>
               ))}
             </div>
 
-            {/* Usage */}
+            {/* Fabric */}
             <div className="mb-6">
               <h3 className="text-purple-600 mb-3 pb-2 border-b-2 border-purple-600">
-                {t.usage}
+                {t.fabric}
               </h3>
-              {['daily', 'party', 'wedding', 'sportswear'].map((item) => (
-                <label key={item} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
+              {uniqueValues.fabric.map((val) => (
+                <label key={val} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={filters.usage.includes(item)}
-                    onChange={() => toggleFilter('usage', item)}
+                    checked={filters.fabric.includes(val as string)}
+                    onChange={() => toggleFilter('fabric', val as string)}
                     className="mr-2"
                   />
-                  <span>
-                    {item === 'daily'
-                      ? t.dailyUse
-                      : item === 'party'
-                      ? t.partyWear
-                      : item === 'wedding'
-                      ? t.weddingBridal
-                      : t.sportswear}
-                  </span>
+                  <span>{tData(val as string, lang)}</span>
                 </label>
               ))}
             </div>
+
+            {/* Quality */}
+            {/* <div className="mb-6">
+              <h3 className="text-purple-600 mb-3 pb-2 border-b-2 border-purple-600">
+                {t.quality}
+              </h3>
+              {uniqueValues.quality.map((val) => (
+                <label key={val} className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.quality.includes(val as string)}
+                    onChange={() => toggleFilter('quality', val as string)}
+                    className="mr-2"
+                  />
+                  <span>{val}</span>
+                </label>
+              ))}
+            </div> */}
 
             {/* Price Range */}
             <div className="mb-6">
@@ -569,14 +553,18 @@ export default function App() {
               <span style={{ fontSize: '1.1rem' }}>{filteredProducts.length} {t.productsFound}</span>
             </h2>
           </div>
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16 text-gray-500">
+              <p style={{ fontSize: '1.2rem' }}>{t.loadingCatalog}</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
               <p style={{ fontSize: '1.2rem' }}>{t.noProductsFound}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.code} product={product} lang={lang} />
+                <ProductCard key={product.id} product={product} lang={lang} />
               ))}
             </div>
           )}
